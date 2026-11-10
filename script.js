@@ -47,14 +47,6 @@ function resize() {
 addEventListener("resize", resize);
 resize();
 
-function updateReadingProgress() {
-  const scrollable = document.documentElement.scrollHeight - innerHeight;
-  const progress = scrollable > 0 ? (scrollY / scrollable) * 100 : 0;
-  if (progressBar) progressBar.style.width = progress + "%";
-}
-addEventListener("scroll", updateReadingProgress, { passive: true });
-updateReadingProgress();
-
 if ("IntersectionObserver" in window && !reducedMotion) {
   const revealObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -82,9 +74,9 @@ function buildLyrics() {
     const row = document.createElement("p");
     row.className = "lyric-line";
     row.dataset.index = String(index);
-    const words = line.split(/(\\s+)/);
+    const words = line.split(/(\s+)/);
     words.forEach(part => {
-      if (/^\\s+$/.test(part)) {
+      if (/^\s+$/.test(part)) {
         row.appendChild(document.createTextNode(part));
       } else {
         const word = document.createElement("span");
@@ -99,7 +91,7 @@ function buildLyrics() {
 }
 function lyricStartTimes() {
   const duration = Number.isFinite(audio.duration) ? audio.duration : 240;
-  const weights = lyricLines.map(line => Math.max(3, line.replace(/[^\\p{L}\\p{N}]/gu, "").length));
+  const weights = lyricLines.map(line => Math.max(3, line.replace(/[^\p{L}\p{N}]/gu, "").length));
   const total = weights.reduce((sum, value) => sum + value, 0);
   let cursor = 0;
   return weights.map(weight => {
@@ -185,27 +177,73 @@ function celebrate() {
     setTimeout(() => burst(width * .76, height * .32, 60), 430);
   }
 }
-async function startBirthdaySong() {
-  if (!audio) return false;
+async function toggleBirthdaySong(forcePlay = false) {
+  if (!audio || !soundButton) return;
+  if (!forcePlay && !audio.paused) {
+    audio.pause();
+    return;
+  }
+  soundButton.disabled = true;
+  soundButton.innerHTML = "<span>…</span> Loading song";
+  if (musicStatus) musicStatus.textContent = "Loading your birthday song…";
   try {
-    // Called directly from the user's Celebrate click, so browsers can allow playback.
-    if (audio.paused) await audio.play();
-    soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song";
-    if (musicStatus) musicStatus.textContent = "Now playing · Birthday soundtrack";
-    $("#cakeInstruction").textContent = "Your birthday song is playing — enjoy the celebration! ♫";
-    return true;
+    // Calling play() directly from this click preserves the browser's user-gesture permission.
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === "function") await playPromise;
   } catch (error) {
-    soundButton.innerHTML = "<span>▶</span> Tap to play birthday song";
-    if (musicStatus) musicStatus.textContent = "Tap the player below to start the song";
-    $("#cakeInstruction").textContent = "Your celebration is ready! Tap the music player below if the song did not start.";
-    return false;
+    console.error("Birthday audio playback failed:", error);
+    if (musicStatus) musicStatus.textContent =
+      audio.error ? "Song file could not be loaded. Check the MP3 link." :
+      "Playback was blocked. Press Play in the audio player below.";
+    if (lyricsStatus) lyricsStatus.textContent = "Lyrics are waiting for the song to play";
+    soundButton.innerHTML = "<span>▶</span> Try play again";
+    $("#birthdayAudio").scrollIntoView({behavior: reducedMotion ? "auto" : "smooth", block: "center"});
+  } finally {
+    soundButton.disabled = false;
   }
 }
-
 $("#celebrateBtn").addEventListener("click", () => {
   celebrate();
-  startBirthdaySong();
-  $("#surprise").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
+  toggleBirthdaySong(true);
+  $("#surprise").scrollIntoView({behavior: reducedMotion ? "auto" : "smooth"});
+});
+soundButton.addEventListener("click", () => toggleBirthdaySong(false));
+audio.addEventListener("play", () => {
+  soundButton.disabled = false;
+  soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song";
+  if (musicStatus) musicStatus.textContent = "Now playing · Birthday soundtrack";
+  if (lyricsStatus) lyricsStatus.textContent = "Sing along · Lyrics are moving with the song";
+});
+audio.addEventListener("playing", () => {
+  if (musicStatus) musicStatus.textContent = "Now playing · Enjoy the music!";
+});
+audio.addEventListener("waiting", () => {
+  if (musicStatus) musicStatus.textContent = "Buffering song…";
+});
+audio.addEventListener("pause", () => {
+  soundButton.disabled = false;
+  if (!audio.ended) {
+    soundButton.innerHTML = "<span>♫</span> Play birthday song";
+    if (musicStatus) musicStatus.textContent = "Paused · Tap play to continue";
+    if (lyricsStatus) lyricsStatus.textContent = "Paused · Lyrics will continue when you resume";
+  }
+});
+audio.addEventListener("ended", () => {
+  soundButton.disabled = false;
+  soundButton.innerHTML = "<span>↻</span> Replay birthday song";
+  if (musicStatus) musicStatus.textContent = "Finished · Replay whenever you like";
+  if (lyricsStatus) lyricsStatus.textContent = "Beautiful song · Replay to sing along again";
+});
+audio.addEventListener("loadedmetadata", () => {
+  if (musicStatus && audio.paused) musicStatus.textContent = "Ready to play · " +
+    (Number.isFinite(audio.duration) ? Math.floor(audio.duration / 60) + ":" + String(Math.floor(audio.duration % 60)).padStart(2,"0") : "audio loaded");
+});
+audio.addEventListener("error", () => {
+  soundButton.disabled = false;
+  soundButton.innerHTML = "<span>↻</span> Retry birthday song";
+  if (musicStatus) musicStatus.textContent = "Could not load the MP3. Check your internet connection.";
+  if (lyricsStatus) lyricsStatus.textContent = "Lyrics will start when the song loads";
+  console.error("Audio element error:", audio.error?.code);
 });
 $("#fireworksBtn").addEventListener("click", () => {
   for (let i = 0; i < (reducedMotion ? 2 : 7); i++) {
@@ -231,28 +269,5 @@ function sendWish() {
 }
 $("#wishBtn").addEventListener("click", sendWish);
 
-soundButton.addEventListener("click", async () => {
-  if (audio.paused) {
-    try {
-      await audio.play();
-      soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song";
-      $("#cakeInstruction").textContent = "Your birthday song is playing — enjoy the celebration! ♫";
-      $("#birthdayAudio").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
-    } catch (error) {
-      soundButton.innerHTML = "<span>▶</span> Tap play in the music player";
-      $("#birthdayAudio").scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  } else {
-    audio.pause();
-    soundButton.innerHTML = "<span>♫</span> Play birthday song";
-  }
-});
-audio.addEventListener("play", () => { soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song"; if (musicStatus) musicStatus.textContent = "Now playing · Birthday soundtrack"; if (lyricsStatus) lyricsStatus.textContent = "Sing along · Lyrics are moving with the song"; });
-audio.addEventListener("pause", () => { soundButton.innerHTML = "<span>♫</span> Play birthday song"; if (musicStatus && !audio.ended) musicStatus.textContent = "Paused · Your song is ready to resume"; if (lyricsStatus && !audio.ended) lyricsStatus.textContent = "Paused · Lyrics will continue when you resume"; });
-audio.addEventListener("ended", () => { soundButton.innerHTML = "<span>↻</span> Replay birthday song"; if (musicStatus) musicStatus.textContent = "Finished · Replay whenever you like"; if (lyricsStatus) lyricsStatus.textContent = "Beautiful song · Replay to sing along again"; });
-audio.addEventListener("error", () => {
-  $("#cakeInstruction").textContent = "The song could not load. Please check your connection and try again.";
-  if (musicStatus) musicStatus.textContent = "Audio unavailable · Check the connection and retry";
-  soundButton.innerHTML = "<span>♫</span> Retry birthday song";
-});
+
 })();
