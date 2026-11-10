@@ -99,3 +99,33 @@
 .cake-photo-label .nameplate-star{color:#fff0a8;font-size:.85em;text-shadow:0 0 8px #fff4bc}
 .cake-stage.wish-complete .cake-photo-label{box-shadow:0 4px 0 #663a35,0 0 25px #ffdf8c,inset 0 1px 3px #fff9d8}
 @media(max-width:600px){.cake-photo-label{bottom:18%;padding:7px 12px;gap:6px;font-size:11px;letter-spacing:.1em}}
+
+
+/* Professional polish: navigation, page progress, accessible motion and reveal */
+html{scroll-padding-top:24px}
+.topbar{position:relative;z-index:10;backdrop-filter:blur(14px)}
+.nav-links{display:flex;align-items:center;gap:25px}
+.nav-links a{color:#cfc3e5;text-decoration:none;font-size:11px;font-weight:600;transition:color .2s}
+.nav-links a:hover{color:#ffe2a1}
+.reading-progress{position:fixed;z-index:30;top:0;left:0;width:0;height:3px;background:linear-gradient(90deg,#ffe18b,#ff81bf,#a48cff);box-shadow:0 0 14px #ff8ccf88;transition:width .08s linear}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .75s ease,transform .75s cubic-bezier(.2,.7,.2,1)}
+.reveal.is-visible{opacity:1;transform:translateY(0)}
+.cake-photo-wrap{transition:transform .45s ease,box-shadow .45s ease}
+.cake-photo-wrap:hover{transform:translateY(-5px) scale(1.008);box-shadow:0 30px 85px #0009,0 0 48px #d99cff44}
+.music-card{backdrop-filter:blur(18px);transition:border-color .25s,transform .25s}
+.music-card:focus-within{border-color:#f6b4e9aa;transform:translateY(-2px)}
+button:focus-visible,a:focus-visible{outline:2px solid #ffe18b;outline-offset:4px}
+.back-top{position:absolute;right:0;bottom:0;display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff30;border-radius:50%;color:#ffe4ad;text-decoration:none;background:#ffffff0b;transition:transform .2s,background .2s}
+.back-top:hover{transform:translateY(-4px);background:#ffffff1b}
+.finale{position:relative}
+.footer-love{position:relative}
+@media(max-width:600px){
+ .nav-links{gap:12px}
+ .nav-links a{font-size:10px}
+ .date-pill{font-size:7px;letter-spacing:.12em}
+ .back-top{right:2px;width:36px;height:36px}
+}
+@media(prefers-reduced-motion:reduce){
+ .reveal{opacity:1;transform:none;transition:none}
+ .cake-photo-wrap:hover{transform:none}
+}
