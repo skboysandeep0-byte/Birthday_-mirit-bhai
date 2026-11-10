@@ -12,19 +12,27 @@ b.addEventListener("click",()=>a.paused?play():a.pause());
 $("#celebrateBtn").addEventListener("click",()=>{fireworks(5);play();$("#surprise").scrollIntoView({behavior:reduce?"auto":"smooth"})});
 $("#wishBtn").addEventListener("click",()=>{$("#cakeStage").classList.add("wished");$("#cakeInstruction").textContent="A beautiful wish, sent with love to AMIRIT BHAI ✨";$("#wishBtn").textContent="Birthday wish sent ✓";$("#wishMessage").classList.add("show");fireworks(3)});
 $("#fireworksBtn").addEventListener("click",()=>fireworks(7));
-const feedbackForm=$("#feedbackForm"),feedbackStatus=$("#feedbackStatus");
-feedbackForm.addEventListener("submit",event=>{
- event.preventDefault();
- const entry={name:$("#feedbackName").value.trim(),rating:$("#feedbackRating").value,message:$("#feedbackMessage").value.trim(),submittedAt:new Date().toISOString()};
- if(!entry.rating||!entry.message){feedbackStatus.textContent="Please select a rating and write your feedback.";return}
- try{
-  const saved=JSON.parse(localStorage.getItem("birthdayWebsiteFeedback")||"[]");
-  saved.push(entry);
-  localStorage.setItem("birthdayWebsiteFeedback",JSON.stringify(saved));
-  feedbackStatus.textContent="Thank you! Your feedback has been saved on this device. 💜";
-  feedbackForm.reset();
- }catch(error){feedbackStatus.textContent="Sorry, this browser could not save your feedback."}
+const video=$("#selfieVideo"),preview=$("#selfiePreview"),placeholder=$("#cameraPlaceholder"),startCamera=$("#startCameraBtn"),takePhoto=$("#takePhotoBtn"),retakePhoto=$("#retakePhotoBtn"),downloadPhoto=$("#downloadSelfie"),selfieStatus=$("#selfieStatus");
+let cameraStream=null,selfieUrl=null;
+function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(track=>track.stop());cameraStream=null}video.srcObject=null}
+startCamera.addEventListener("click",async()=>{
+ if(!navigator.mediaDevices?.getUserMedia){selfieStatus.textContent="Camera is unavailable. Open this page in a supported browser over HTTPS.";return}
+ startCamera.disabled=true;selfieStatus.textContent="Waiting for camera permission…";
+ try{stopCamera();cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});video.srcObject=cameraStream;video.hidden=false;preview.hidden=true;placeholder.hidden=true;takePhoto.disabled=false;retakePhoto.hidden=true;downloadPhoto.hidden=true;selfieStatus.textContent="Camera is ready. Smile and tap Take selfie!"}
+ catch(error){selfieStatus.textContent=error.name==="NotAllowedError"?"Camera permission was denied. Allow camera access in your browser settings and try again.":"Could not open the camera. Check that no other app is using it."}
+ finally{startCamera.disabled=false}
 });
+takePhoto.addEventListener("click",()=>{
+ if(!cameraStream||!video.videoWidth){selfieStatus.textContent="Start the camera first.";return}
+ const shot=document.createElement("canvas");shot.width=video.videoWidth;shot.height=video.videoHeight;const ctx=shot.getContext("2d");
+ ctx.translate(shot.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,shot.width,shot.height);
+ shot.toBlob(blob=>{if(!blob){selfieStatus.textContent="Could not capture the photo. Please try again.";return}
+ if(selfieUrl)URL.revokeObjectURL(selfieUrl);selfieUrl=URL.createObjectURL(blob);preview.src=selfieUrl;preview.hidden=false;video.hidden=true;stopCamera();takePhoto.disabled=true;retakePhoto.hidden=false;downloadPhoto.href=selfieUrl;downloadPhoto.hidden=false;selfieStatus.textContent="Selfie captured! Download it to save your photo on your device. 💜"
+ },"image/png");
+});
+retakePhoto.addEventListener("click",()=>{preview.hidden=true;downloadPhoto.hidden=true;retakePhoto.hidden=true;startCamera.click()});
+addEventListener("pagehide",stopCamera);
+
 let W=innerWidth,H=innerHeight,particles=[],raf=0;
 function resize(){W=innerWidth;H=innerHeight;if(c){const d=Math.min(devicePixelRatio||1,2);c.width=W*d;c.height=H*d;c.style.width=W+"px";c.style.height=H+"px";x?.setTransform(d,0,0,d,0,0)}}addEventListener("resize",resize);resize();
 function burst(px,py,count){const colors=["#ffd88a","#ff8fbe","#bba3ff","#8ee7d1","#fff4d5"];for(let i=0;i<count;i++){const q=Math.random()*Math.PI*2,s=1+Math.random()*5;particles.push({x:px,y:py,vx:Math.cos(q)*s,vy:Math.sin(q)*s,life:70+Math.random()*35,color:colors[i%colors.length],size:1+Math.random()*3})}if(!raf)animate()}
