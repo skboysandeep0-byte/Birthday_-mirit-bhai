@@ -12,6 +12,19 @@ b.addEventListener("click",()=>a.paused?play():a.pause());
 $("#celebrateBtn").addEventListener("click",()=>{fireworks(5);play();$("#surprise").scrollIntoView({behavior:reduce?"auto":"smooth"})});
 $("#wishBtn").addEventListener("click",()=>{$("#cakeStage").classList.add("wished");$("#cakeInstruction").textContent="A beautiful wish, sent with love to AMIRIT BHAI ✨";$("#wishBtn").textContent="Birthday wish sent ✓";$("#wishMessage").classList.add("show");fireworks(3)});
 $("#fireworksBtn").addEventListener("click",()=>fireworks(7));
+const feedbackForm=$("#feedbackForm"),feedbackStatus=$("#feedbackStatus");
+feedbackForm.addEventListener("submit",event=>{
+ event.preventDefault();
+ const entry={name:$("#feedbackName").value.trim(),rating:$("#feedbackRating").value,message:$("#feedbackMessage").value.trim(),submittedAt:new Date().toISOString()};
+ if(!entry.rating||!entry.message){feedbackStatus.textContent="Please select a rating and write your feedback.";return}
+ try{
+  const saved=JSON.parse(localStorage.getItem("birthdayWebsiteFeedback")||"[]");
+  saved.push(entry);
+  localStorage.setItem("birthdayWebsiteFeedback",JSON.stringify(saved));
+  feedbackStatus.textContent="Thank you! Your feedback has been saved on this device. 💜";
+  feedbackForm.reset();
+ }catch(error){feedbackStatus.textContent="Sorry, this browser could not save your feedback."}
+});
 let W=innerWidth,H=innerHeight,particles=[],raf=0;
 function resize(){W=innerWidth;H=innerHeight;if(c){const d=Math.min(devicePixelRatio||1,2);c.width=W*d;c.height=H*d;c.style.width=W+"px";c.style.height=H+"px";x?.setTransform(d,0,0,d,0,0)}}addEventListener("resize",resize);resize();
 function burst(px,py,count){const colors=["#ffd88a","#ff8fbe","#bba3ff","#8ee7d1","#fff4d5"];for(let i=0;i<count;i++){const q=Math.random()*Math.PI*2,s=1+Math.random()*5;particles.push({x:px,y:py,vx:Math.cos(q)*s,vy:Math.sin(q)*s,life:70+Math.random()*35,color:colors[i%colors.length],size:1+Math.random()*3})}if(!raf)animate()}
