@@ -210,3 +210,8 @@ body{font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothin
 @media(min-width:760px){.lyrics-panel{padding:19px 20px 14px}.lyrics-window{height:188px}.lyric-line{font-size:13px}}
 @media(max-width:420px){.lyrics-panel{padding:14px 11px 11px}.lyrics-window{height:158px}.lyric-line{font-size:11px}.lyrics-topline h3{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.lyric-line,.lyric-word{transition:none}.lyrics-window{scroll-behavior:auto}}
+
+/* Reliable audio control states */
+.sound-btn:disabled{opacity:.72;cursor:wait;transform:none}
+#birthdayAudio{display:block;width:100%;max-width:100%;min-height:44px}
+.music-heading small{transition:color .2s}
