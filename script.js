@@ -9,6 +9,9 @@ const soundButton = $("#soundBtn");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const progressBar = $("#readingProgress");
 const musicStatus = $("#musicStatus");
+const lyricsList = $("#lyricsList");
+const lyricsWindow = $("#lyricsWindow");
+const lyricsStatus = $("#lyricsStatus");
 let scrollTicking = false;
 function updateProgress() {
   const maxScroll = document.documentElement.scrollHeight - innerHeight;
@@ -20,8 +23,6 @@ addEventListener("scroll", () => {
   if (!scrollTicking) { requestAnimationFrame(updateProgress); scrollTicking = true; }
 }, { passive: true });
 updateProgress();
-const progressBar = $("#readingProgress");
-
 for (let i = 0; i < 115; i++) {
   const star = document.createElement("i");
   star.className = "star";
@@ -68,6 +69,86 @@ if ("IntersectionObserver" in window && !reducedMotion) {
     revealObserver.observe(el);
   });
 }
+
+
+/* Compact in-card karaoke. Timing is estimated from audio length; LRC timestamps can replace it. */
+const lyricLines = ["L'âme en peine, il vit mais parle à peine","Il attend devant cette photo d'antan","Il, il n'est pas fou, il y croit, c'est tout","Il la voit partout, il l'attend debout","Une rose à la main, ah, à part elle, il n'attend rien","Rien autour n'a de sens et l'air est lourd","Le regard absent, il est seul et lui parle souvent","Il, il n'est pas fou, il l'aime, c'est tout","Il la voit partout, il l'attend debout","Debout, une rose à la main, non, non, plus rien ne le retient","Dans sa love story","Dans sa love story","Dans sa love story","Sa love story","Prends ma main, promets-moi que tout ira bien","Serre-moi fort, près de toi, je rêve encore","Oui, oui, je veux rester, mais, je n'sais plus aimer","J'ai été trop bête, je t'en prie, arrête","Arrête, comme je regrette, non, je ne voulais pas tout ça","Je serai riche et je t'offrirai tout mon or","Si tu t'en fiches, je t'attendrai sur le port","Et si tu m'ignores, je t'offrirai mon dernier souffle de vie","Dans ma love story","Dans ma love story","Dans ma love story","Ma love story","Une bougie peut illuminer la nuit","Un sourir peut bâtir tout un empire","Et il y a toi, et il y a moi","Et personne n'y croit, mais l'amour fait d'un fou un roi","Et si tu m'ignores, j'me battrai encore et encore","C'est ta love story","C'est ta love story","C'est l'histoire d'une vie","Love story","Des cris de joie, quelques larmes, on s'en va","On vit dans cette love story","Love story, love story","Love story, love story","Love story, love story","Love story, love story","Love story, love story"];
+let lyricNodes = [];
+let activeLyricIndex = -1;
+function buildLyrics() {
+  if (!lyricsList) return;
+  lyricsList.innerHTML = "";
+  lyricNodes = lyricLines.map((line, index) => {
+    const row = document.createElement("p");
+    row.className = "lyric-line";
+    row.dataset.index = String(index);
+    const words = line.split(/(\\s+)/);
+    words.forEach(part => {
+      if (/^\\s+$/.test(part)) {
+        row.appendChild(document.createTextNode(part));
+      } else {
+        const word = document.createElement("span");
+        word.className = "lyric-word";
+        word.textContent = part;
+        row.appendChild(word);
+      }
+    });
+    lyricsList.appendChild(row);
+    return row;
+  });
+}
+function lyricStartTimes() {
+  const duration = Number.isFinite(audio.duration) ? audio.duration : 240;
+  const weights = lyricLines.map(line => Math.max(3, line.replace(/[^\\p{L}\\p{N}]/gu, "").length));
+  const total = weights.reduce((sum, value) => sum + value, 0);
+  let cursor = 0;
+  return weights.map(weight => {
+    const start = cursor;
+    cursor += duration * (weight / total);
+    return start;
+  });
+}
+let lyricTimes = [];
+function updateLyrics() {
+  if (!lyricsList || !audio || !lyricNodes.length) return;
+  const current = audio.currentTime || 0;
+  if (!lyricTimes.length || !Number.isFinite(audio.duration)) lyricTimes = lyricStartTimes();
+  let index = 0;
+  for (let i = 0; i < lyricTimes.length; i++) {
+    if (current >= lyricTimes[i]) index = i;
+    else break;
+  }
+  const duration = Number.isFinite(audio.duration) ? audio.duration : 240;
+  const nextStart = index < lyricTimes.length - 1 ? lyricTimes[index + 1] : duration;
+  const start = lyricTimes[index] || 0;
+  const progress = Math.max(0, Math.min(1, (current - start) / Math.max(.1, nextStart - start)));
+  if (index !== activeLyricIndex) {
+    if (activeLyricIndex >= 0) lyricNodes[activeLyricIndex].classList.remove("is-active");
+    activeLyricIndex = index;
+    lyricNodes[index].classList.add("is-active");
+    lyricNodes[index].scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    if (lyricsStatus) lyricsStatus.textContent = "Now singing · Line " + (index + 1) + " of " + lyricLines.length;
+  }
+  const words = lyricNodes[index].querySelectorAll(".lyric-word");
+  const wordIndex = Math.min(words.length - 1, Math.floor(progress * words.length));
+  words.forEach((word, i) => word.classList.toggle("is-sung", i <= wordIndex));
+}
+function resetLyrics() {
+  activeLyricIndex = -1;
+  lyricTimes = [];
+  lyricNodes.forEach(node => {
+    node.classList.remove("is-active");
+    node.querySelectorAll(".lyric-word").forEach(word => word.classList.remove("is-sung"));
+  });
+  if (lyricsStatus) lyricsStatus.textContent = "Lyrics will follow the song when playback starts";
+}
+buildLyrics();
+audio.addEventListener("loadedmetadata", () => { lyricTimes = lyricStartTimes(); updateLyrics(); });
+audio.addEventListener("timeupdate", updateLyrics);
+audio.addEventListener("seeked", updateLyrics);
+audio.addEventListener("play", () => { if (lyricsStatus) lyricsStatus.textContent = "Sing along · Lyrics are moving with the song"; });
+audio.addEventListener("pause", () => { if (lyricsStatus && !audio.ended) lyricsStatus.textContent = "Paused · Lyrics will continue when you resume"; });
+audio.addEventListener("ended", () => { if (lyricsStatus) lyricsStatus.textContent = "Beautiful song · Replay to sing along again"; });
 
 const colors = ["#ffd88a", "#ff8fbe", "#bba3ff", "#8ee7d1", "#fff4d5", "#ef9cff"];
 function burst(x, y, count = 85, force = 5, palette = colors) {
@@ -166,9 +247,9 @@ soundButton.addEventListener("click", async () => {
     soundButton.innerHTML = "<span>♫</span> Play birthday song";
   }
 });
-audio.addEventListener("play", () => { soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song"; if (musicStatus) musicStatus.textContent = "Now playing · Birthday soundtrack"; });
-audio.addEventListener("pause", () => { soundButton.innerHTML = "<span>♫</span> Play birthday song"; if (musicStatus && !audio.ended) musicStatus.textContent = "Paused · Your song is ready to resume"; });
-audio.addEventListener("ended", () => { soundButton.innerHTML = "<span>↻</span> Replay birthday song"; if (musicStatus) musicStatus.textContent = "Finished · Replay whenever you like"; });
+audio.addEventListener("play", () => { soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song"; if (musicStatus) musicStatus.textContent = "Now playing · Birthday soundtrack"; if (lyricsStatus) lyricsStatus.textContent = "Sing along · Lyrics are moving with the song"; });
+audio.addEventListener("pause", () => { soundButton.innerHTML = "<span>♫</span> Play birthday song"; if (musicStatus && !audio.ended) musicStatus.textContent = "Paused · Your song is ready to resume"; if (lyricsStatus && !audio.ended) lyricsStatus.textContent = "Paused · Lyrics will continue when you resume"; });
+audio.addEventListener("ended", () => { soundButton.innerHTML = "<span>↻</span> Replay birthday song"; if (musicStatus) musicStatus.textContent = "Finished · Replay whenever you like"; if (lyricsStatus) lyricsStatus.textContent = "Beautiful song · Replay to sing along again"; });
 audio.addEventListener("error", () => {
   $("#cakeInstruction").textContent = "The song could not load. Please check your connection and try again.";
   if (musicStatus) musicStatus.textContent = "Audio unavailable · Check the connection and retry";
