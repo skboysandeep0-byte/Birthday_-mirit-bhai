@@ -118,7 +118,9 @@ function updateLyrics() {
     if (activeLyricIndex >= 0) lyricNodes[activeLyricIndex].classList.remove("is-active");
     activeLyricIndex = index;
     lyricNodes[index].classList.add("is-active");
-    lyricNodes[index].scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    const activeRow = lyricNodes[index];
+    const targetTop = activeRow.offsetTop - (lyricsWindow.clientHeight - activeRow.offsetHeight) / 2;
+    lyricsWindow.scrollTo({ top: Math.max(0, targetTop), behavior: reducedMotion ? "auto" : "smooth" });
     if (lyricsStatus) lyricsStatus.textContent = "Now singing · Line " + (index + 1) + " of " + lyricLines.length;
   }
   const words = lyricNodes[index].querySelectorAll(".lyric-word");
