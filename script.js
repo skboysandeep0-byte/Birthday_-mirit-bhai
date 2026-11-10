@@ -181,12 +181,15 @@ function celebrate() {
 }
 async function toggleBirthdaySong(forcePlay = false) {
   if (!audio || !soundButton) return;
+  if (audio.ended) audio.currentTime = 0;
   if (!forcePlay && !audio.paused) {
     audio.pause();
     return;
   }
   soundButton.disabled = true;
+  soundButton.setAttribute("aria-pressed", "false");
   soundButton.innerHTML = "<span>…</span> Loading song";
+  if (audio.networkState === HTMLMediaElement.NETWORK_EMPTY) audio.load();
   if (musicStatus) musicStatus.textContent = "Loading your birthday song…";
   try {
     // Calling play() directly from this click preserves the browser's user-gesture permission.
@@ -199,6 +202,7 @@ async function toggleBirthdaySong(forcePlay = false) {
       "Playback was blocked. Press Play in the audio player below.";
     if (lyricsStatus) lyricsStatus.textContent = "Lyrics are waiting for the song to play";
     soundButton.innerHTML = "<span>▶</span> Try play again";
+    soundButton.setAttribute("aria-pressed", "false");
     $("#birthdayAudio").scrollIntoView({behavior: reducedMotion ? "auto" : "smooth", block: "center"});
   } finally {
     soundButton.disabled = false;
@@ -213,6 +217,7 @@ soundButton.addEventListener("click", () => toggleBirthdaySong(false));
 audio.addEventListener("play", () => {
   soundButton.disabled = false;
   soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song";
+  soundButton.setAttribute("aria-pressed", "true");
   if (musicStatus) musicStatus.textContent = "Now playing · Birthday soundtrack";
   if (lyricsStatus) lyricsStatus.textContent = "Sing along · Lyrics are moving with the song";
 });
@@ -226,6 +231,7 @@ audio.addEventListener("pause", () => {
   soundButton.disabled = false;
   if (!audio.ended) {
     soundButton.innerHTML = "<span>♫</span> Play birthday song";
+    soundButton.setAttribute("aria-pressed", "false");
     if (musicStatus) musicStatus.textContent = "Paused · Tap play to continue";
     if (lyricsStatus) lyricsStatus.textContent = "Paused · Lyrics will continue when you resume";
   }
@@ -233,6 +239,7 @@ audio.addEventListener("pause", () => {
 audio.addEventListener("ended", () => {
   soundButton.disabled = false;
   soundButton.innerHTML = "<span>↻</span> Replay birthday song";
+  soundButton.setAttribute("aria-pressed", "false");
   if (musicStatus) musicStatus.textContent = "Finished · Replay whenever you like";
   if (lyricsStatus) lyricsStatus.textContent = "Beautiful song · Replay to sing along again";
 });
