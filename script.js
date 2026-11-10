@@ -16,9 +16,20 @@ let wished=false;
 function blowCandles(){if(wished){$("#wishMessage").classList.add("show");return}wished=true;document.querySelectorAll(".candle").forEach((c,i)=>setTimeout(()=>c.classList.add("out"),i*180));$("#cakeInstruction").textContent="Wish made. Let the magic begin! ✨";$("#wishBtn").textContent="Wish sent into the universe ✓";$("#wishMessage").classList.add("show");burst(width/2,height*.49,reducedMotion?24:115,5);setTimeout(()=>burst(width*.28,height*.43,50,4),250);setTimeout(()=>burst(width*.72,height*.4,50,4),420)}
 $("#wishBtn").addEventListener("click",blowCandles);
 document.querySelectorAll(".candle").forEach(c=>{c.setAttribute("role","button");c.setAttribute("tabindex","0");c.setAttribute("aria-label","Blow out a birthday candle");c.addEventListener("click",blowCandles);c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();blowCandles()}})});
-let audioContext=null,musicTimer=null,noteIndex=0;const melody=[523.25,659.25,783.99,659.25,698.46,783.99,1046.5,783.99];
-function playNote(){if(!audioContext)return;const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type="sine";osc.frequency.value=melody[noteIndex++%melody.length];gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.075,now+.025);gain.gain.exponentialRampToValueAtTime(.0001,now+.32);osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+.34)}
-function stopMusic(){if(musicTimer)clearInterval(musicTimer);musicTimer=null;$("#soundBtn").setAttribute("aria-pressed","false");$("#soundIcon").textContent="♫";$("#soundLabel").textContent="Play celebration music"}
-$("#soundBtn").addEventListener("click",async()=>{if(musicTimer){stopMusic();return}try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error("Audio unsupported");audioContext=audioContext||new AC();await audioContext.resume();playNote();musicTimer=setInterval(playNote,390);$("#soundBtn").setAttribute("aria-pressed","true");$("#soundIcon").textContent="Ⅱ";$("#soundLabel").textContent="Pause celebration music"}catch(error){$("#soundLabel").textContent="Audio unavailable";console.error(error)}});
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&musicTimer)stopMusic()});
+const YOUTUBE_EMBED = "https://www.youtube-nocookie.com/embed/8kfP22meDL0?autoplay=1&rel=0";
+$("#soundBtn").addEventListener("click", () => {
+  const player = $("#youtubePlayer"), frame = $("#youtubeFrame");
+  if (player.hidden) {
+    frame.src = YOUTUBE_EMBED;
+    player.hidden = false;
+    $("#soundBtn").setAttribute("aria-expanded", "true");
+    $("#soundBtn").innerHTML = "<span>♫</span> Birthday song is ready below";
+    player.scrollIntoView({behavior: reducedMotion ? "auto" : "smooth", block: "center"});
+  } else {
+    frame.src = "";
+    player.hidden = true;
+    $("#soundBtn").setAttribute("aria-expanded", "false");
+    $("#soundBtn").innerHTML = "<span>▶</span> Play birthday song on YouTube";
+  }
+});
 })();
