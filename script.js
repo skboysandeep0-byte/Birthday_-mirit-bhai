@@ -13,12 +13,16 @@ $("#celebrateBtn").addEventListener("click",()=>{fireworks(5);play();$("#surpris
 $("#wishBtn").addEventListener("click",()=>{$("#cakeStage").classList.add("wished");$("#cakeInstruction").textContent="A beautiful wish, sent with love to AMIRIT BHAI ✨";$("#wishBtn").textContent="Birthday wish sent ✓";$("#wishMessage").classList.add("show");fireworks(3)});
 $("#fireworksBtn").addEventListener("click",()=>fireworks(7));
 const video=$("#selfieVideo"),preview=$("#selfiePreview"),placeholder=$("#cameraPlaceholder"),startCamera=$("#startCameraBtn"),takePhoto=$("#takePhotoBtn"),retakePhoto=$("#retakePhotoBtn"),downloadPhoto=$("#downloadSelfie"),selfieStatus=$("#selfieStatus");
-let cameraStream=null,selfieUrl=null;
+let cameraStream=null,selfieUrl=null,selfieBlob=null,turnstileToken="";
+const uploadSelfie=$("#uploadSelfieBtn"),galleryLink=$("#galleryLink");
+const UPLOAD_ENDPOINT="https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev/upload";
+window.birthdayTurnstileSuccess=token=>{turnstileToken=token;uploadSelfie.disabled=!selfieBlob};
+window.birthdayTurnstileExpired=()=>{turnstileToken="";uploadSelfie.disabled=true};
 function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(track=>track.stop());cameraStream=null}video.srcObject=null}
 startCamera.addEventListener("click",async()=>{
  if(!navigator.mediaDevices?.getUserMedia){selfieStatus.textContent="Camera is unavailable. Open this page in a supported browser over HTTPS.";return}
  startCamera.disabled=true;selfieStatus.textContent="Waiting for camera permission…";
- try{stopCamera();cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});video.srcObject=cameraStream;video.hidden=false;preview.hidden=true;placeholder.hidden=true;takePhoto.disabled=false;retakePhoto.hidden=true;downloadPhoto.hidden=true;selfieStatus.textContent="Camera is ready. Smile and tap Take selfie!"}
+ try{stopCamera();cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});video.srcObject=cameraStream;video.muted=true;video.playsInline=true;await new Promise((resolve,reject)=>{if(video.readyState>=2)return resolve();video.onloadedmetadata=resolve;video.onerror=reject});await video.play();video.hidden=false;preview.hidden=true;placeholder.hidden=true;takePhoto.disabled=false;retakePhoto.hidden=true;downloadPhoto.hidden=true;selfieStatus.textContent="Camera is ready. Smile and tap Take selfie!"}
  catch(error){selfieStatus.textContent=error.name==="NotAllowedError"?"Camera permission was denied. Allow camera access in your browser settings and try again.":"Could not open the camera. Check that no other app is using it."}
  finally{startCamera.disabled=false}
 });
@@ -27,10 +31,21 @@ takePhoto.addEventListener("click",()=>{
  const shot=document.createElement("canvas");shot.width=video.videoWidth;shot.height=video.videoHeight;const ctx=shot.getContext("2d");
  ctx.translate(shot.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,shot.width,shot.height);
  shot.toBlob(blob=>{if(!blob){selfieStatus.textContent="Could not capture the photo. Please try again.";return}
- if(selfieUrl)URL.revokeObjectURL(selfieUrl);selfieUrl=URL.createObjectURL(blob);preview.src=selfieUrl;preview.hidden=false;video.hidden=true;stopCamera();takePhoto.disabled=true;retakePhoto.hidden=false;downloadPhoto.href=selfieUrl;downloadPhoto.hidden=false;selfieStatus.textContent="Selfie captured! Download it to save your photo on your device. 💜"
+ if(selfieUrl)URL.revokeObjectURL(selfieUrl);selfieBlob=blob;selfieUrl=URL.createObjectURL(blob);preview.src=selfieUrl;preview.hidden=false;video.hidden=true;stopCamera();takePhoto.disabled=true;retakePhoto.hidden=false;downloadPhoto.href=selfieUrl;downloadPhoto.hidden=false;uploadSelfie.disabled=!turnstileToken;selfieStatus.textContent="Selfie captured! Download it or verify below to upload it to the public gallery. 💜"
  },"image/png");
 });
-retakePhoto.addEventListener("click",()=>{preview.hidden=true;downloadPhoto.hidden=true;retakePhoto.hidden=true;startCamera.click()});
+retakePhoto.addEventListener("click",()=>{preview.hidden=true;downloadPhoto.hidden=true;retakePhoto.hidden=true;selfieBlob=null;uploadSelfie.disabled=true;galleryLink.hidden=true;startCamera.click()});
+uploadSelfie.addEventListener("click",async()=>{
+ if(!selfieBlob||!turnstileToken)return;
+ if(UPLOAD_ENDPOINT.includes("YOUR-WORKER-NAME")){selfieStatus.textContent="Cloudflare Worker setup is not finished yet.";return}
+ uploadSelfie.disabled=true;selfieStatus.textContent="Uploading your photo securely…";
+ try{
+  const response=await fetch(UPLOAD_ENDPOINT,{method:"POST",headers:{"Content-Type":"image/png","X-Turnstile-Token":turnstileToken},body:selfieBlob});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||"Upload failed");
+  galleryLink.hidden=false;galleryLink.replaceChildren();const link=document.createElement("a");link.href=data.url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="View your public GitHub photo";galleryLink.append(link);
+  selfieStatus.textContent="Uploaded! Your selfie is now public in the GitHub repository.";
+ }catch(error){selfieStatus.textContent="Upload failed: "+error.message+". You can still download your selfie.";uploadSelfie.disabled=false}
+});
 addEventListener("pagehide",stopCamera);
 
 let W=innerWidth,H=innerHeight,particles=[],raf=0;
