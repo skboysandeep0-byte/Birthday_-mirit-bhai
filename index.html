@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<a class="skip-link" href="#home">Skip to birthday celebration</a>
+<div class="page-progress" aria-hidden="true"><span id="readingProgress"></span></div>
 <div class="reading-progress" id="readingProgress" aria-hidden="true"></div>
 <div class="sky" aria-hidden="true"><div class="stars" id="stars"></div><div class="moon"></div><div class="glow glow-one"></div><div class="glow glow-two"></div></div>
 <canvas id="celebration" aria-hidden="true"></canvas><div class="noise" aria-hidden="true"></div>
@@ -21,7 +23,7 @@
 <div class="eyebrow"><span>✧</span> TODAY IS ALL ABOUT YOU <span>✧</span></div>
 <h1>Happy Birthday,<br><span class="gradient-text">AMIRIT BHAI!</span></h1>
 <p class="intro">Some people make ordinary days brighter.<br>Today, the whole universe celebrates <strong>you</strong>.</p>
-<div class="hero-actions"><button class="primary-btn" id="celebrateBtn"><span>🎉</span> Celebrate!</button><button class="sound-btn" id="soundBtn" aria-controls="birthdayAudio" aria-label="Play or pause birthday song"><span>♫</span> Play birthday song</button></div>
+<div class="hero-actions"><button type="button" class="primary-btn" id="celebrateBtn" aria-label="Start the birthday celebration and play the song"><span>🎉</span> Celebrate!</button><button class="sound-btn" id="soundBtn" aria-controls="birthdayAudio" aria-label="Play or pause birthday song"><span>♫</span> Play birthday song</button></div>
 <div class="scroll-hint"><span></span> SCROLL TO THE SURPRISE</div>
 </section>
 <section class="surprise section" id="surprise">
@@ -36,10 +38,10 @@
 <figcaption class="cake-photo-label"><span class="nameplate-star">✦</span> AMIRIT BHAI <span class="nameplate-star">✦</span></figcaption>
 </figure>
 <div class="cake-instruction" id="cakeInstruction">A special birthday cake, chosen just for you ✨</div>
-<button class="wish-btn" id="wishBtn">Send your birthday wish <span>→</span></button>
+<button type="button" class="wish-btn" id="wishBtn">Send your birthday wish <span>→</span></button>
 </div>
 <div class="music-card">
-<div class="music-heading"><span class="music-note">♫</span><div><strong>A song for the birthday star</strong><small>Press play and enjoy the moment</small></div></div>
+<div class="music-heading"><span class="music-note">♫</span><div><strong>A song for the birthday star</strong><small id="musicStatus">Ready when you are · Tap Celebrate to play</small></div></div>
 <audio id="birthdayAudio" controls preload="metadata">
 <source src="LOVE_STORY-_Genshin_Impact_%5BAMV_GMV%5D(48k).mp3" type="audio/mpeg">
 Your browser does not support audio playback.
@@ -50,7 +52,7 @@ Your browser does not support audio playback.
 </section>
 <section class="message section" id="message"><div class="message-card"><div class="card-decoration">✧</div><div class="section-kicker">A NOTE FROM THE HEART</div><h2>For someone <span>truly special.</span></h2>
 <p>Dear AMIRIT BHAI,</p><p>May your days be filled with laughter, your dreams find their way to reality, and your journey be full of wonderful surprises. Keep shining, keep smiling, and keep being the amazing person you are.</p><p>Here's to new adventures, bigger achievements, unforgettable moments, and a year that's even better than the last.</p><div class="signature">With lots of love <span>♡</span></div></div></section>
-<section class="finale section"><div class="finale-orb">🎂</div><div class="section-kicker">ONE LAST THING...</div><h2>Let's make some<br><span class="gradient-text">birthday magic!</span></h2><p class="section-copy">This moment deserves a sky full of fireworks.</p><button class="primary-btn big-btn" id="fireworksBtn">Launch the fireworks <span>✦</span></button><div class="footer-love">MADE WITH <span>♥</span> FOR AMIRIT BHAI</div><a class="back-top" href="#home" aria-label="Back to top">↑</a></section>
+<section class="finale section"><div class="finale-orb">🎂</div><div class="section-kicker">ONE LAST THING...</div><h2>Let's make some<br><span class="gradient-text">birthday magic!</span></h2><p class="section-copy">This moment deserves a sky full of fireworks.</p><button type="button" class="primary-btn big-btn" id="fireworksBtn">Launch the fireworks <span>✦</span></button><div class="footer-love">MADE WITH <span>♥</span> FOR AMIRIT BHAI</div><a class="back-to-top" href="#home">Back to the top ↑</a><a class="back-top" href="#home" aria-label="Back to top">↑</a></section>
 </main>
 <script src="script.js"></script>
 </body>
