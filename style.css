@@ -187,3 +187,26 @@ body{font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothin
  .cake-photo-wrap{animation:none}
  .page-progress span{transition:none}
 }
+
+
+/* ── Compact karaoke lyrics panel: stays inside the music card ── */
+.lyrics-panel{margin-top:22px;padding:17px 17px 13px;border:1px solid #d9b3f033;border-radius:16px;background:linear-gradient(145deg,#100c20eF,#1c1230d9);overflow:hidden}
+.lyrics-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid #ffffff12}
+.lyrics-eyebrow{color:#e7b7ed;font-size:9px;font-weight:800;letter-spacing:.22em}
+.lyrics-topline h3{margin:4px 0 0;color:#fff0fb;font-family:'Playfair Display',serif;font-size:18px;font-weight:700}
+.lyrics-topline h3 span{color:#ffd98a;font-family:inherit}
+.lyrics-language{padding:5px 8px;border:1px solid #f3c4e52a;border-radius:99px;color:#c9b8dc;font-size:8px;letter-spacing:.15em}
+.lyrics-window{height:172px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#a67cbb44 transparent;mask-image:linear-gradient(transparent,#000 10%,#000 90%,transparent);-webkit-mask-image:linear-gradient(transparent,#000 10%,#000 90%,transparent);scroll-behavior:smooth}
+.lyrics-window::-webkit-scrollbar{width:4px}
+.lyrics-window::-webkit-scrollbar-thumb{border-radius:10px;background:#b98bd066}
+.lyrics-list{display:flex;flex-direction:column;align-items:center;gap:8px;padding:60px 6px}
+.lyric-line{width:100%;margin:0;text-align:center;color:#8e819f;font-size:12px;line-height:1.65;font-weight:500;letter-spacing:.01em;transform:scale(.97);opacity:.58;transition:color .35s,opacity .35s,transform .35s,text-shadow .35s}
+.lyric-line.is-active{color:#fff0fb;opacity:1;transform:scale(1.035);font-weight:700;text-shadow:0 0 16px #e89bdb55}
+.lyric-word{display:inline;transition:color .18s,text-shadow .18s}
+.lyric-word.is-sung{color:#ffd98a;text-shadow:0 0 12px #ffce7955}
+.lyrics-foot{display:flex;align-items:center;gap:8px;margin-top:10px;color:#a99bbd;font-size:9px;letter-spacing:.04em}
+.lyrics-live-dot{width:6px;height:6px;border-radius:50%;background:#dca1ef;box-shadow:0 0 9px #dca1ef;flex:0 0 6px}
+.audio-hint{margin-top:9px}
+@media(min-width:760px){.lyrics-panel{padding:19px 20px 14px}.lyrics-window{height:188px}.lyric-line{font-size:13px}}
+@media(max-width:420px){.lyrics-panel{padding:14px 11px 11px}.lyrics-window{height:158px}.lyric-line{font-size:11px}.lyrics-topline h3{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.lyric-line,.lyric-word{transition:none}.lyrics-window{scroll-behavior:auto}}
