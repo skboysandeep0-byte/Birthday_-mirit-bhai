@@ -81,3 +81,21 @@
 @keyframes photoSparkle{from{opacity:.45;transform:scale(.75) rotate(-12deg)}to{opacity:1;transform:scale(1.15) rotate(12deg)}}
 @media(max-width:600px){.cake-stage{padding:20px 0 10px}.cake-photo-wrap{padding:6px;border-radius:17px}.cake-photo{border-radius:12px;max-height:none}.cake-photo-label{padding:10px 21px;font-size:13px}.music-card{padding:18px 16px;margin-top:27px}.photo-sparkle{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.cake-photo-wrap,.photo-sparkle{animation:none!important}}
+
+
+/* Personalised fondant-style name plaque placed directly on the cake */
+.cake-photo-wrap{position:relative}
+.cake-photo-label{
+  position:absolute;z-index:4;left:50%;bottom:18%;transform:translateX(-50%);
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:max-content;max-width:82%;margin:0;padding:9px 20px;
+  border:1px solid #fff0bd;border-radius:8px 8px 11px 11px;
+  background:linear-gradient(180deg,#fff0c9 0%,#dca85d 18%,#9a5c39 100%);
+  color:#fff8e7;font-family:'Playfair Display',serif;font-size:clamp(12px,2.2vw,18px);
+  font-weight:800;letter-spacing:.13em;text-shadow:0 2px 3px #542d24;
+  box-shadow:0 4px 0 #663a35,0 7px 15px #24101b88,inset 0 1px 3px #fff9d8;
+  white-space:nowrap;pointer-events:none;
+}
+.cake-photo-label .nameplate-star{color:#fff0a8;font-size:.85em;text-shadow:0 0 8px #fff4bc}
+.cake-stage.wish-complete .cake-photo-label{box-shadow:0 4px 0 #663a35,0 0 25px #ffdf8c,inset 0 1px 3px #fff9d8}
+@media(max-width:600px){.cake-photo-label{bottom:18%;padding:7px 12px;gap:6px;font-size:11px;letter-spacing:.1em}}
