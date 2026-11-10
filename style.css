@@ -41,3 +41,14 @@
 @keyframes titleReveal{from{opacity:0;transform:translateY(28px) scale(.97);filter:blur(8px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @keyframes cakeTurn{0%,100%{rotate:-1deg}50%{rotate:1deg}}
 @media(max-width:600px){.cake-nameplate{bottom:54px;font-size:10px;padding:7px 13px}}
+
+/* Warm candle-blowout moment: elegant gold, champagne and soft rose */
+.cake-stage.wish-complete .cake-halo{background:radial-gradient(ellipse,#ffd97855 0%,#ff9cbd22 48%,transparent 72%);filter:blur(24px);animation:wishGlow 2.8s ease-in-out infinite alternate}
+.cake-stage.wish-complete .sparkle{color:#ffe6a1;text-shadow:0 0 12px #ffd56b,0 0 28px #ffb85c}
+.cake-stage.wish-complete .cake{filter:drop-shadow(0 22px 28px #0009) drop-shadow(0 0 22px #ffce8066)}
+.cake-stage.wish-complete .cake-nameplate{box-shadow:0 0 22px #ffdc8a88,inset 0 1px #ffffff80}
+.cake-stage.wish-complete .cake-instruction{color:#ffe6b7;text-shadow:0 0 15px #ffca7655}
+.cake-stage.wish-complete .wish-btn{border-color:#ffdc8a99;color:#ffe9b8;box-shadow:0 0 24px #ffca6b33}
+.candle.out:after{background:#e9d9cf;box-shadow:0 0 10px #f6e9df}
+.youtube-fallback{display:inline-block;margin-top:8px;color:#ffe0a8;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+@keyframes wishGlow{from{opacity:.65;transform:scale(.94)}to{opacity:1;transform:scale(1.08)}}
