@@ -7,6 +7,7 @@ const ctx = canvas.getContext("2d");
 const audio = $("#birthdayAudio");
 const soundButton = $("#soundBtn");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const progressBar = $("#readingProgress");
 
 for (let i = 0; i < 115; i++) {
   const star = document.createElement("i");
@@ -31,6 +32,29 @@ function resize() {
 }
 addEventListener("resize", resize);
 resize();
+
+function updateReadingProgress() {
+  const scrollable = document.documentElement.scrollHeight - innerHeight;
+  const progress = scrollable > 0 ? (scrollY / scrollable) * 100 : 0;
+  if (progressBar) progressBar.style.width = progress + "%";
+}
+addEventListener("scroll", updateReadingProgress, { passive: true });
+updateReadingProgress();
+
+if ("IntersectionObserver" in window && !reducedMotion) {
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".surprise, .message, .finale, .music-card, .wish-message").forEach(el => {
+    el.classList.add("reveal");
+    revealObserver.observe(el);
+  });
+}
 
 const colors = ["#ffd88a", "#ff8fbe", "#bba3ff", "#8ee7d1", "#fff4d5", "#ef9cff"];
 function burst(x, y, count = 85, force = 5, palette = colors) {
