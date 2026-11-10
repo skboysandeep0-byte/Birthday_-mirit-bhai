@@ -67,8 +67,24 @@ function celebrate() {
     setTimeout(() => burst(width * .76, height * .32, 60), 430);
   }
 }
+async function startBirthdaySong() {
+  if (!audio) return false;
+  try {
+    // Called directly from the user's Celebrate click, so browsers can allow playback.
+    if (audio.paused) await audio.play();
+    soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song";
+    $("#cakeInstruction").textContent = "Your birthday song is playing — enjoy the celebration! ♫";
+    return true;
+  } catch (error) {
+    soundButton.innerHTML = "<span>▶</span> Tap to play birthday song";
+    $("#cakeInstruction").textContent = "Your celebration is ready! Tap the music player below if the song did not start.";
+    return false;
+  }
+}
+
 $("#celebrateBtn").addEventListener("click", () => {
   celebrate();
+  startBirthdaySong();
   $("#surprise").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
 });
 $("#fireworksBtn").addEventListener("click", () => {
@@ -100,6 +116,7 @@ soundButton.addEventListener("click", async () => {
     try {
       await audio.play();
       soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song";
+      $("#cakeInstruction").textContent = "Your birthday song is playing — enjoy the celebration! ♫";
       $("#birthdayAudio").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
     } catch (error) {
       soundButton.innerHTML = "<span>▶</span> Tap play in the music player";
@@ -113,4 +130,8 @@ soundButton.addEventListener("click", async () => {
 audio.addEventListener("play", () => soundButton.innerHTML = "<span>Ⅱ</span> Pause birthday song");
 audio.addEventListener("pause", () => soundButton.innerHTML = "<span>♫</span> Play birthday song");
 audio.addEventListener("ended", () => soundButton.innerHTML = "<span>↻</span> Replay birthday song");
+audio.addEventListener("error", () => {
+  $("#cakeInstruction").textContent = "The song could not load. Please check your connection and try again.";
+  soundButton.innerHTML = "<span>♫</span> Retry birthday song";
+});
 })();
